@@ -10,7 +10,7 @@ import Foundation
 
 public struct ShareGlucose {
     public let glucose: UInt16
-    public let trend: UInt8
+    public let trend: String
     public let timestamp: Date
 }
 
@@ -184,10 +184,10 @@ public class ShareClient {
 
                     var transformed: Array<ShareGlucose> = []
                     for sgv in sgvs {
-                        if let glucose = sgv["Value"] as? Int, let trend = sgv["Trend"] as? Int, let wt = sgv["WT"] as? String {
+                        if let glucose = sgv["Value"] as? Int, let trend = sgv["Trend"] as? String, let wt = sgv["WT"] as? String {
                             transformed.append(ShareGlucose(
                                 glucose: UInt16(glucose),
-                                trend: UInt8(trend),
+                                trend: trend,
                                 timestamp: try self.parseDate(wt)
                             ))
                         } else {
@@ -207,7 +207,7 @@ public class ShareClient {
     private func parseDate(_ wt: String) throws -> Date {
         // wt looks like "/Date(1462404576000)/"
         let re = try NSRegularExpression(pattern: "\\((.*)\\)")
-        if let match = re.firstMatch(in: wt, range: NSMakeRange(0, wt.count)) {
+        if let match = re.firstMatch(in: wt, range: NSMakeRange(0, wt.characters.count)) {
             #if swift(>=4)
                 let matchRange = match.range(at: 1)
             #else
