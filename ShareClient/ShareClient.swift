@@ -10,7 +10,7 @@ import Foundation
 
 public struct ShareGlucose {
     public let glucose: UInt16
-    public let trend: String
+    public let trend: String //
     public let timestamp: Date
 }
 
