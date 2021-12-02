@@ -10,7 +10,7 @@ import Foundation
 
 public struct ShareGlucose {
     public let glucose: UInt16
-    public let trend: String //
+    public let trend: UInt8
     public let timestamp: Date
 }
 
@@ -184,12 +184,14 @@ public class ShareClient {
 
                     var transformed: Array<ShareGlucose> = []
                     for sgv in sgvs {
-                        if let glucose = sgv["Value"] as? Int, let trend = sgv["Trend"] as? String, let wt = sgv["WT"] as? String {
-                            transformed.append(ShareGlucose(
-                                glucose: UInt16(glucose),
-                                trend: trend,
-                                timestamp: try self.parseDate(wt)
-                            ))
+                        if let glucose = sgv["Value"] as? Int, let wt = sgv["WT"] as? String {
+                            if let trend = sgv["Trend"] as? Int {
+                                transformed.append(ShareGlucose(
+                                    glucose: UInt16(glucose),
+                                    trend: UInt8(trend),
+                                    timestamp: try self.parseDate(wt)
+                                ))
+                            } 
                         } else {
                             throw ShareError.dataError(reason: "Failed to decode an SGV record: " + response)
                         }
