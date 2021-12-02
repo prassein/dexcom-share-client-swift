@@ -10,7 +10,7 @@ import Foundation
 
 public struct ShareGlucose {
     public let glucose: UInt16
-    public let trend: String //
+    public let trend: UInt8
     public let timestamp: Date
 }
 
@@ -125,10 +125,10 @@ public class ShareClient {
             }
 
             guard let   response = response,
-                let data = response.data(using: .utf8),
-                let decoded = try? JSONSerialization.jsonObject(with: data, options: .allowFragments)
-                else {
-                    return callback(.loginError(errorCode: "unknown"), nil)
+                  let data = response.data(using: .utf8),
+                  let decoded = try? JSONSerialization.jsonObject(with: data, options: .allowFragments)
+                    else {
+                return callback(.loginError(errorCode: "unknown"), nil)
             }
 
             if let token = decoded as? String {
@@ -184,12 +184,14 @@ public class ShareClient {
 
                     var transformed: Array<ShareGlucose> = []
                     for sgv in sgvs {
-                        if let glucose = sgv["Value"] as? Int, let trend = sgv["Trend"] as? String, let wt = sgv["WT"] as? String {
-                            transformed.append(ShareGlucose(
-                                glucose: UInt16(glucose),
-                                trend: trend,
-                                timestamp: try self.parseDate(wt)
-                            ))
+                        if let glucose = sgv["Value"] as? Int, let wt = sgv["WT"] as? String {
+                            if let trend = sgv["Trend"] as? Int {
+                                transformed.append(ShareGlucose(
+                                        glucose: UInt16(glucose),
+                                        trend: UInt8(trend),
+                                        timestamp: try self.parseDate(wt)
+                                ))
+                            }
                         } else {
                             throw ShareError.dataError(reason: "Failed to decode an SGV record: " + response)
                         }
@@ -209,9 +211,9 @@ public class ShareClient {
         let re = try NSRegularExpression(pattern: "\\((.*)\\)")
         if let match = re.firstMatch(in: wt, range: NSMakeRange(0, wt.characters.count)) {
             #if swift(>=4)
-                let matchRange = match.range(at: 1)
+            let matchRange = match.range(at: 1)
             #else
-                let matchRange = match.rangeAt(1)
+            let matchRange = match.rangeAt(1)
             #endif
             let epoch = Double((wt as NSString).substring(with: matchRange))! / 1000
             return Date(timeIntervalSince1970: epoch)
