@@ -191,6 +191,36 @@ public class ShareClient {
                                         trend: UInt8(trend),
                                         timestamp: try self.parseDate(wt)
                                 ))
+                            } else {
+                                let trendStr = sgv["Trend"] as? String
+                                var trend = 0
+
+                                switch trendStr {
+                                case "DoubleUp":
+                                    trend = 1
+                                case "SingleUp":
+                                    trend = 2
+                                case "FortyFiveUp":
+                                    trend = 3
+                                case "Flat":
+                                    trend = 4
+                                case "FortyFiveDown":
+                                    trend = 5
+                                case "SingleDown":
+                                    trend = 6
+                                case "DoubleDown":
+                                    trend = 7
+                                case .none:
+                                    trend = 4
+                                case .some(_):
+                                    trend = 4
+                                }
+
+                                transformed.append(ShareGlucose(
+                                        glucose: UInt16(glucose),
+                                        trend: UInt8(trend),
+                                        timestamp: try self.parseDate(wt)
+                                ))
                             }
                         } else {
                             throw ShareError.dataError(reason: "Failed to decode an SGV record: " + response)
